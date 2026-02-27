@@ -2,7 +2,7 @@
 
 A clean PDF tools dashboard inspired by iLovePDF with:
 
-- Top bar with logo and authentication area.
+- Top bar with logo, navigation, and authentication area.
 - Left sidebar listing all tools.
 - Main dashboard cards for tool categories.
 - Google login using Supabase Auth.

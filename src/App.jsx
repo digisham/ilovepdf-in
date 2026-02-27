@@ -1,21 +1,27 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from './supabaseClient';
 
+const topNavItems = ['All PDF Tools', 'Convert', 'Compress', 'Edit', 'Organize', 'Security'];
+
 const toolGroups = [
   {
     title: 'Convert to PDF',
+    description: 'Quickly create PDFs from your office and image files.',
     tools: ['Word to PDF', 'PowerPoint to PDF', 'Excel to PDF', 'JPG to PDF', 'HTML to PDF'],
   },
   {
     title: 'Convert from PDF',
+    description: 'Export PDF content to editable formats in one click.',
     tools: ['PDF to Word', 'PDF to PowerPoint', 'PDF to Excel', 'PDF to JPG', 'PDF to PDF/A'],
   },
   {
     title: 'Optimize PDF',
+    description: 'Reduce size, fix issues, and improve document quality.',
     tools: ['Compress PDF', 'Repair PDF', 'OCR PDF', 'Unlock PDF', 'Protect PDF'],
   },
   {
     title: 'Edit PDF',
+    description: 'Manage pages and add annotations for polished files.',
     tools: ['Merge PDF', 'Split PDF', 'Rotate PDF', 'Add Page Numbers', 'Watermark PDF'],
   },
 ];
@@ -48,7 +54,9 @@ function App() {
       setSession(nextSession);
     });
 
-    return () => listener.subscription.unsubscribe();
+    return () => {
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
   const userDisplay = useMemo(() => getUserDisplay(session?.user), [session]);
@@ -68,7 +76,10 @@ function App() {
 
     if (error) {
       setAuthError(error.message);
+      return;
     }
+
+    setAuthError('');
   };
 
   const logout = async () => {
@@ -76,35 +87,48 @@ function App() {
     const { error } = await supabase.auth.signOut();
     if (error) {
       setAuthError(error.message);
+      return;
     }
+
+    setAuthError('');
   };
+
+  const allTools = toolGroups.flatMap((group) => group.tools);
 
   return (
     <div className="app-shell bg-light min-vh-100">
       <header className="topbar border-bottom bg-white sticky-top">
-        <div className="container-fluid d-flex align-items-center justify-content-between py-2 px-3 px-lg-4">
-          <div className="d-flex align-items-center gap-2">
+        <div className="container-fluid d-flex align-items-center justify-content-between gap-3 py-2 px-3 px-lg-4">
+          <div className="d-flex align-items-center gap-2 flex-shrink-0">
             <div className="logo-mark">PDF</div>
             <div>
               <h1 className="h5 mb-0 fw-bold text-danger">iLovePDF Clone</h1>
-              <small className="text-muted">All PDF tools in one dashboard</small>
+              <small className="text-muted">Fast and clean PDF tools</small>
             </div>
           </div>
 
+          <nav className="top-nav d-none d-xl-flex align-items-center gap-1">
+            {topNavItems.map((item, idx) => (
+              <button key={item} className={`btn btn-sm ${idx === 0 ? 'btn-danger' : 'btn-top-nav'}`}>
+                {item}
+              </button>
+            ))}
+          </nav>
+
           {!authLoading && !session && (
-            <button className="btn btn-danger px-4" onClick={loginWithGoogle}>
+            <button className="btn btn-danger px-4 flex-shrink-0" onClick={loginWithGoogle}>
               Login with Google
             </button>
           )}
 
           {!authLoading && session && (
-            <div className="d-flex align-items-center gap-2">
+            <div className="d-flex align-items-center gap-2 flex-shrink-0">
               {userDisplay.avatar ? (
                 <img src={userDisplay.avatar} alt={userDisplay.firstName} className="avatar" />
               ) : (
                 <span className="avatar avatar-fallback">{userDisplay.firstName[0]?.toUpperCase()}</span>
               )}
-              <span className="fw-semibold">{userDisplay.firstName}</span>
+              <span className="fw-semibold d-none d-sm-inline">{userDisplay.firstName}</span>
               <button className="btn btn-sm btn-outline-danger" onClick={logout}>
                 Logout
               </button>
@@ -124,7 +148,7 @@ function App() {
           <aside className="col-12 col-lg-3 col-xl-2 border-end bg-white sidebar p-3 p-lg-4">
             <h2 className="h6 text-uppercase text-muted fw-bold mb-3">All Tools</h2>
             <nav className="nav flex-column gap-1">
-              {toolGroups.flatMap((group) => group.tools).map((tool) => (
+              {allTools.map((tool) => (
                 <button key={tool} className="btn btn-tool text-start">
                   {tool}
                 </button>
@@ -133,10 +157,11 @@ function App() {
           </aside>
 
           <section className="col-12 col-lg-9 col-xl-10 p-3 p-lg-4">
-            <div className="mb-4">
-              <h2 className="h4 fw-bold mb-1">PDF Tools Dashboard</h2>
+            <div className="hero-card bg-white border rounded-4 p-4 mb-4 shadow-sm">
+              <h2 className="h4 fw-bold mb-2">PDF Tools Home</h2>
               <p className="text-muted mb-0">
-                Build your own iLovePDF-like experience with conversion, optimization, and editing tools.
+                Dashboard layout with top navigation, left sidebar tools, and Google auth backed by Supabase.
+                Only user login/profile data is stored.
               </p>
             </div>
 
@@ -144,8 +169,9 @@ function App() {
               {toolGroups.map((group) => (
                 <div className="col-12 col-md-6" key={group.title}>
                   <div className="card tool-card h-100 border-0 shadow-sm">
-                    <div className="card-body">
-                      <h3 className="h6 fw-bold mb-3">{group.title}</h3>
+                    <div className="card-body p-4">
+                      <h3 className="h6 fw-bold mb-2">{group.title}</h3>
+                      <p className="small text-muted mb-3">{group.description}</p>
                       <div className="d-flex flex-wrap gap-2">
                         {group.tools.map((tool) => (
                           <span key={tool} className="badge rounded-pill text-bg-light border text-secondary">
